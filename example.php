@@ -9,8 +9,8 @@ include 'SplynxApi.php';
 
 $api_url = 'http://splynx/'; // please set your Splynx URL
 
-$key = "3d052b922dc2f44d1d03d957ff5691ba"; // please set your key
-$secret = "4d944c2d4d55bd78a1af0f6b8d5958af"; // please set your secret
+$key = "API_KEY"; // please set your key
+$secret = "API_SECRET"; // please set your secret
 
 // don't forget to add permissions to API Key, for changing locations.
 
