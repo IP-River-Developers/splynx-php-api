@@ -5,7 +5,7 @@
  * https://splynx.com/wiki/index.php/API - documentation
  */
 
-include 'SplynxApi.php';
+include '../src/SplynxApi.php';
 
 $api_url = 'http://splynx/'; // please set your Splynx URL
 
