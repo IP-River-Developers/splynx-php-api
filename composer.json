@@ -22,7 +22,7 @@
     },
     "autoload": {
         "files": [
-            "vendor/splynx/splynx-php-api/SplynxApi.php"
+            "SplynxApi.php"
         ]
     }
 }
