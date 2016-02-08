@@ -1,5 +1,6 @@
 {
     "name": "splynx/splynx-php-api",
+    "type": "library",
     "description": "Splynx PHP Api class",
     "keywords": [
         "splynx"
@@ -9,7 +10,7 @@
         {
             "name": "Ruslan Malymon",
             "email": "ex.mac.work@gmail.com",
-            "role": "Developer"
+            "role": "Lead Developer"
         },
         {
             "name": "Oleksii Fedoryshyn",
