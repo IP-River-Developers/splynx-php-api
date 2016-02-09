@@ -6,6 +6,7 @@
         "splynx"
     ],
     "homepage": "https://bitbucket.org/splynx/splynx-php-api",
+    "license": "MIT",
     "authors": [
         {
             "name": "Ruslan Malymon",
