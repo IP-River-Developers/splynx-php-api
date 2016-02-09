@@ -1,0 +1,29 @@
+{
+    "name": "splynx/splynx-php-api",
+    "type": "library",
+    "description": "Splynx PHP Api class",
+    "keywords": [
+        "splynx"
+    ],
+    "homepage": "https://bitbucket.org/splynx/splynx-php-api",
+    "authors": [
+        {
+            "name": "Ruslan Malymon",
+            "email": "ex.mac.work@gmail.com",
+            "role": "Lead Developer"
+        },
+        {
+            "name": "Oleksii Fedoryshyn",
+            "email": "fenixter@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "SplynxApi": "src/"
+        }
+    },
+    "require": {
+        "php": ">=5.3.0"
+    }
+}
