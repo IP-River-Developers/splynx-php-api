@@ -20,6 +20,9 @@ class SplynxApi
     public $response;
     public $response_code;
 
+    /** @var string Hash of admin session id. Will be send in $_GET['sash'] in add-ons requests */
+    private $sash;
+
     /**
      * Create Splynx API object
      *
@@ -165,6 +168,11 @@ class SplynxApi
             'nonce' => $this->nonce_v++
         );
 
+        // Add $sash is needed
+        if ($this->sash !== null) {
+            $auth['sash'] = $this->sash;
+        }
+
         return http_build_query($auth);
     }
 
@@ -228,6 +236,26 @@ class SplynxApi
         if (empty($params)) return false;
         if (empty($id)) return false;
         return $this->curl_process('PUT', $this->getUrl($path, $id), $params);
+    }
+
+    /**
+     * Get $sash
+     *
+     * @return string
+     */
+    public function getSash()
+    {
+        return $this->sash;
+    }
+
+    /**
+     * Set $sash
+     *
+     * @param string $sash
+     */
+    public function setSash($sash)
+    {
+        $this->sash = $sash;
     }
 
 }
