@@ -234,8 +234,12 @@ class SplynxApi
     public function api_call_put($path, $id, $params)
     {
         if (empty($params)) return false;
-        if (empty($id)) return false;
-        return $this->curl_process('PUT', $this->getUrl($path, $id), $params);
+        if (empty($id)) {
+            $url = $this->getUrl($path);
+        } else {
+            $url = $this->getUrl($path, $id);
+        }
+        return $this->curl_process('PUT', $url, $params);
     }
 
     /**
