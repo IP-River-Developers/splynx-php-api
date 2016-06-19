@@ -1,11 +1,11 @@
 <?php
+
 /**
  * Splynx API v. 1.0
  * REST API Class
  * Author: Ruslan Malymon (Top Net Media s.r.o.)
  * https://splynx.com/wiki/index.php/API - documentation
  */
-
 class SplynxApi
 {
     private $api_key;
@@ -179,7 +179,7 @@ class SplynxApi
     private function getUrl($path, $id = null)
     {
         $url = $this->url . '/' . $path;
-        if ($id !== null) {
+        if (!empty($id)) {
             $url .= '/' . $id;
         }
         return $url;
@@ -206,7 +206,6 @@ class SplynxApi
      */
     public function api_call_delete($path, $id)
     {
-        if (empty($id)) return false;
         return $this->curl_process('DELETE', $this->getUrl($path, $id));
     }
 
@@ -219,7 +218,6 @@ class SplynxApi
      */
     public function api_call_post($path, $params)
     {
-        if (empty($params)) return false;
         return $this->curl_process('POST', $this->getUrl($path), $params);
     }
 
@@ -233,13 +231,7 @@ class SplynxApi
      */
     public function api_call_put($path, $id, $params)
     {
-        if (empty($params)) return false;
-        if (empty($id)) {
-            $url = $this->getUrl($path);
-        } else {
-            $url = $this->getUrl($path, $id);
-        }
-        return $this->curl_process('PUT', $url, $params);
+        return $this->curl_process('PUT', $this->getUrl($path, $id), $params);
     }
 
     /**
