@@ -14,6 +14,10 @@ class SplynxApi
     private $url;
     private $version = '1.0';
 
+    public $administrator_id;
+    public $administrator_role;
+    public $administrator_partner;
+
     public $debug = false;
 
     public $result;
@@ -101,11 +105,11 @@ class SplynxApi
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Splynx PHP API ' . $this->version);
 
         if ($this->debug == true) {
             curl_setopt($ch, CURLOPT_VERBOSE, 1);
-//            curl_setopt($ch, CURLOPT_HEADER, 0);
         }
 
         $out = curl_exec($ch);
@@ -113,6 +117,14 @@ class SplynxApi
         if (curl_errno($ch)) {
             trigger_error("cURL failed. Error #" . curl_errno($ch) . ": " . curl_error($ch), E_USER_ERROR);
         }
+
+        // Parse headers and body
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header = substr($out, 0, $header_size);
+        $out = substr($out, $header_size);
+
+        // Parse headers
+        $this->parseResponseHeaders($header);
 
         $this->response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
@@ -254,4 +266,24 @@ class SplynxApi
         $this->sash = $sash;
     }
 
+    private function parseResponseHeaders($header_text)
+    {
+        foreach (explode("\r\n", $header_text) as $i => $line)
+            if ($i !== 0) {
+                list ($key, $value) = explode(': ', $line);
+
+                switch ($key) {
+                    case 'SpL-Administrator-Id':
+                        $this->administrator_id = $value;
+                        break;
+                    case 'SpL-Administrator-Role':
+                        $this->administrator_role = $value;
+
+                        break;
+                    case 'SpL-Administrator-Partner':
+                        $this->administrator_partner = $value;
+                        break;
+                }
+            }
+    }
 }
