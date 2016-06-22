@@ -269,9 +269,8 @@ class SplynxApi
     private function parseResponseHeaders($header_text)
     {
         foreach (explode("\r\n", $header_text) as $i => $line)
-            if ($i !== 0) {
-                list ($key, $value) = explode(': ', $line);
-
+            if ($i !== 0 && !empty($line)) {
+                list ($key, $value) = array_pad(explode(': ', $line, 2), 2, null);
                 switch ($key) {
                     case 'SpL-Administrator-Id':
                         $this->administrator_id = $value;
