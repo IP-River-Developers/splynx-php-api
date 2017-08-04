@@ -72,9 +72,10 @@ class SplynxApi
      * @param string $method Method: get, delete, put, post
      * @param string $url
      * @param array $param
-     * @return array JSON results
+     * @param string $contentType
+     * @return array|boolean
      */
-    private function curl_process($method, $url, $param = array())
+    private function curl_process($method, $url, $param = array(), $contentType = 'application/json')
     {
         $ch = curl_init();
 
@@ -84,7 +85,7 @@ class SplynxApi
         }
 
         $headers = array();
-        $headers[] = 'Content-type: application/json';
+        $headers[] = 'Content-type: ' . $contentType;
         $auth_str = $this->make_auth();
         $headers[] = 'Authorization: Splynx-EA (' . $auth_str . ')';
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -95,12 +96,12 @@ class SplynxApi
 
         if ($method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($param));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
         }
 
         if ($method == 'PUT') {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($param));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
         }
 
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -206,7 +207,7 @@ class SplynxApi
      */
     public function api_call_get($path, $id = null)
     {
-        return $this->curl_process('GET', $this->getUrl($path, $id));
+        return $this->curl_process('GET', $this->getUrl($path, $id), array(), 'application/json');
     }
 
     /**
@@ -218,32 +219,52 @@ class SplynxApi
      */
     public function api_call_delete($path, $id)
     {
-        return $this->curl_process('DELETE', $this->getUrl($path, $id));
+        return $this->curl_process('DELETE', $this->getUrl($path, $id), array(), 'application/json');
     }
 
     /**
      * Send API call POST (add) to Splynx API
      *
-     * @param string $path
-     * @param array $params
-     * @return array JSON results
+     * @param $path
+     * @param $params
+     * @param bool $encode
+     * @return array
      */
-    public function api_call_post($path, $params)
+    public function api_call_post($path, $params, $encode = true, $contentType = 'application/json')
     {
-        return $this->curl_process('POST', $this->getUrl($path), $params);
+        if ($encode) {
+            $params = json_encode($params);
+        }
+        return $this->curl_process('POST', $this->getUrl($path), $params, $contentType);
+    }
+
+    /**
+     * Upload file to Splynx
+     *
+     * @param $path
+     * @param $params
+     * @return array
+     */
+    public function api_call_post_file($path, $params)
+    {
+        return $this->api_call_post($path, $params, false, 'multipart/form-data');
     }
 
     /**
      * Send API call PUT (update) to Splynx API
      *
-     * @param string $path
-     * @param integer $id
-     * @param array $params
-     * @return array JSON results
+     * @param $path
+     * @param $id
+     * @param $params
+     * @param bool $encode
+     * @return array
      */
-    public function api_call_put($path, $id, $params)
+    public function api_call_put($path, $id, $params, $encode = true, $contentType = 'application/json')
     {
-        return $this->curl_process('PUT', $this->getUrl($path, $id), $params);
+        if ($encode) {
+            $params = json_encode($params);
+        }
+        return $this->curl_process('PUT', $this->getUrl($path, $id), $params, $contentType);
     }
 
     /**
