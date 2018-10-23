@@ -71,6 +71,9 @@ class SplynxApi
     /** @var string Status code of last request */
     public $response_code;
 
+    /** @var array Response headers */
+    public $response_headers;
+
     /** @var string Hash of admin session id. Will be send in $_GET['sash'] in add-ons requests */
     private $_sash;
 
@@ -166,7 +169,7 @@ class SplynxApi
         $ch = curl_init();
 
         if ($this->debug == true) {
-            print $method . " to " . $url . "\n";
+            print $method . ' to ' . $url . "\n";
             print_r($param);
         }
 
@@ -177,11 +180,15 @@ class SplynxApi
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         if ($method == 'DELETE') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
         }
 
         if ($method == 'OPTIONS') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "OPTIONS");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'OPTIONS');
+        }
+
+        if ($method == 'HEAD') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'HEAD');
         }
 
         if ($method == 'POST') {
@@ -190,7 +197,7 @@ class SplynxApi
         }
 
         if ($method == 'PUT') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
         }
 
@@ -206,7 +213,7 @@ class SplynxApi
         $out = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            trigger_error("cURL failed. Error #" . curl_errno($ch) . ": " . curl_error($ch), E_USER_ERROR);
+            trigger_error('cURL failed. Error #' . curl_errno($ch) . ': ' . curl_error($ch), E_USER_ERROR);
         }
 
         // Parse headers and body
@@ -326,9 +333,13 @@ class SplynxApi
      */
     private function parseResponseHeaders($header_text)
     {
+        $this->response_headers = [];
+
         foreach (explode("\r\n", $header_text) as $i => $line) {
             if ($i !== 0 && !empty($line)) {
                 list ($key, $value) = array_pad(explode(': ', $line, 2), 2, null);
+                $this->response_headers[$key] = $value;
+
                 switch ($key) {
                     case 'SpL-Administrator-Id':
                         $this->administrator_id = $value;
@@ -503,8 +514,8 @@ class SplynxApi
 
     /**
      * Send API call GET to Splynx API
-     * @param $path
-     * @param string $id
+     * @param string $path API endpoint
+     * @param string|null $id Record id
      * @return array
      */
     public function api_call_get($path, $id = null)
@@ -514,8 +525,8 @@ class SplynxApi
 
     /**
      * Send API call DELETE to Splynx API
-     * @param string $path
-     * @param integer $id
+     * @param string $path API endpoint
+     * @param integer $id Record id
      * @return array JSON results
      */
     public function api_call_delete($path, $id)
@@ -525,9 +536,9 @@ class SplynxApi
 
     /**
      * Send API call POST (add) to Splynx API
-     * @param $path
-     * @param $params
-     * @param bool $encode
+     * @param string $path API endpoint
+     * @param array $params Payload
+     * @param bool $encode Encode payload?
      * @param string $contentType
      * @return array
      */
@@ -541,8 +552,8 @@ class SplynxApi
 
     /**
      * Upload file to Splynx
-     * @param $path
-     * @param $params
+     * @param string $path API endpoint
+     * @param array $params Payload
      * @return array
      */
     public function api_call_post_file($path, $params)
@@ -552,9 +563,9 @@ class SplynxApi
 
     /**
      * Send API call PUT (update) to Splynx API
-     * @param $path
-     * @param $id
-     * @param $params
+     * @param string $path API endpoint
+     * @param int $id Record id
+     * @param array $params Payload
      * @param bool $encode
      * @param string $contentType
      * @return array
@@ -569,12 +580,22 @@ class SplynxApi
 
     /**
      * Send API call OPTIONS to Splynx API
-     * @param $path
-     * @param string $id
+     * @param string $path API endpoint
+     * @param int $id
      * @return array
      */
     public function api_call_options($path, $id = null)
     {
         return $this->request('OPTIONS', $this->getUrl($path, $id), [], 'application/json');
+    }
+
+    /**
+     * Send API call HEAD to Splynx API
+     * @param string $path API endpoint
+     * @return array
+     */
+    public function api_call_head($path)
+    {
+        return $this->request('HEAD', $this->getUrl($path), [], 'application/json');
     }
 }
