@@ -1,19 +1,57 @@
 <?php
 
+use exceptions\InvalidParam;
+
 /**
- * Splynx API v. 1.0
+ * Splynx API v. 2.0
  * REST API Class
  * Author: Ruslan Malymon (Top Net Media s.r.o.)
  * https://splynx.com/wiki/index.php/API - documentation
+ *
+ * @example
+ * ```
+ * // API v2 usage example
+ * $api = new SplynxApi('http://my_domain.com');
+ * $api->setVersion(SplynxApi::API_VERSION_2);
+ *
+ * // Login as admin
+ * $api->login([
+ *      'auth_type' => SplynxApi::AUTH_TYPE_ADMIN,
+ *      'login' => 'alen',
+ *      'password' => '12345',
+ *      // 'code' => '23422', // Uncomment it if two factor authorization is enabled
+ * ]);
+ *
+ * // Login as customer
+ * //$api->login([
+ * //    'auth_type' => SplynxApi::AUTH_TYPE_CUSTOMER,
+ * //    'login' => 'bob',
+ * //    'password' => 'hard_password',
+ * //]);
+ *
+ * // Login with using API key
+ * //$api->login([
+ * //    'auth_type' => SplynxApi::AUTH_TYPE_API_KEY,
+ * //    'key' => '6871925f25d7e3341255d35ef2c40feb',
+ * //    'secret' => '23012ba6d5698179b5d793074f0cfb2e',
+ * //]);
+ *
+ * // Or you can store auth data in external storage
+ * //$_SESSION['auth_data'] = $api->getAuthData();
+ * //
+ * And then use it for authenticate instead of login
+ * //$api->setAuthData($_SESSION['auth_data']);
+ *
+ *
+ * echo "\nUser permissions: " . var_export($api->getPermissions(), 1);
+ *
+ * $api->api_call_get('admin/administration/locations'); // Get all locations
+ * echo "\nLocations: " . var_export($api->response, 1);
+ * $api->logoff();
+ * ```
  */
 class SplynxApi
 {
-    private $api_key;
-    private $api_secret;
-    private $nonce_v;
-    private $url;
-    private $version = '1.0';
-
     public $administrator_id;
     public $administrator_role;
     public $administrator_partner;
@@ -25,20 +63,51 @@ class SplynxApi
     public $response_code;
 
     /** @var string Hash of admin session id. Will be send in $_GET['sash'] in add-ons requests */
-    private $sash;
+    private $_sash;
+
+    private $_api_key;
+    private $_api_secret;
+    private $_nonce_v;
+    private $_url;
+    private $_version = self::API_VERSION_1;
+
+    /** @var string Access token for API v2 authorization */
+    private $_access_token;
+
+    /** @var int Access token expiration time */
+    private $_access_token_expiration;
+
+    /** @var string Refresh token for API v2. Used for renew access token */
+    private $_refresh_token;
+
+    /** @var int Refresh token expiration time */
+    private $_refresh_token_expiration;
+
+    /** @var array|null Current API v2 user permissions */
+    private $_permissions;
+
+    const API_VERSION_1 = '1.0';
+    const API_VERSION_2 = '2.0';
+
+    /** Url for working with auth tokens */
+    const TOKEN_URL = 'admin/auth/tokens';
+
+    const AUTH_TYPE_ADMIN = 'admin';
+    const AUTH_TYPE_CUSTOMER = 'customer';
+    const AUTH_TYPE_API_KEY = 'api_key';
 
     /**
      * Create Splynx API object
      *
      * @param $url
-     * @param $api_key
-     * @param $api_secret
+     * @param string|null $api_key Required only for API v1
+     * @param string|null $api_secret Required only for API v1
      */
-    public function __construct($url, $api_key, $api_secret)
+    public function __construct($url, $api_key = null, $api_secret = null)
     {
-        $this->url = $url . 'api/' . $this->version;
-        $this->api_key = $api_key;
-        $this->api_secret = $api_secret;
+        $this->_url = $url . 'api/';
+        $this->_api_key = $api_key;
+        $this->_api_secret = $api_secret;
         $this->nonce();
     }
 
@@ -49,10 +118,10 @@ class SplynxApi
     private function signature()
     {
         // Create string
-        $string = $this->nonce_v . $this->api_key;
+        $string = $this->_nonce_v . $this->_api_key;
 
         // Create hash
-        $hash = hash_hmac('sha256', $string, $this->api_secret);
+        $hash = hash_hmac('sha256', $string, $this->_api_secret);
         $hash = strtoupper($hash);
 
         return $hash;
@@ -63,19 +132,19 @@ class SplynxApi
      */
     private function nonce()
     {
-        $this->nonce_v = round(microtime(true) * 100);
+        $this->_nonce_v = round(microtime(true) * 100);
     }
 
     /**
      * Send curl request to Splynx API
      *
-     * @param string $method Method: get, delete, put, post
+     * @param string $method Method: GET, POST, PUT, DELETE, OPTIONS
      * @param string $url
      * @param array $param
      * @param string $contentType
-     * @return array|boolean
+     * @return array|bool
      */
-    private function curl_process($method, $url, $param = array(), $contentType = 'application/json')
+    private function curlProcess($method, $url, $param = [], $contentType = 'application/json')
     {
         $ch = curl_init();
 
@@ -84,14 +153,18 @@ class SplynxApi
             print_r($param);
         }
 
-        $headers = array();
+        $headers = [];
         $headers[] = 'Content-type: ' . $contentType;
-        $auth_str = $this->make_auth();
+        $auth_str = $this->makeAuth();
         $headers[] = 'Authorization: Splynx-EA (' . $auth_str . ')';
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         if ($method == 'DELETE') {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        }
+
+        if ($method == 'OPTIONS') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "OPTIONS");
         }
 
         if ($method == 'POST') {
@@ -107,7 +180,7 @@ class SplynxApi
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Splynx PHP API ' . $this->version);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Splynx PHP API ' . $this->_version);
 
         if ($this->debug == true) {
             curl_setopt($ch, CURLOPT_VERBOSE, 1);
@@ -162,10 +235,31 @@ class SplynxApi
                 }
                 break;
         }
-
         $this->response = json_decode($out, true);
+        if ($this->response === false) {
+            $this->response = $out;
+        }
 
         return $this->result;
+    }
+
+    /**
+     * Send curl request to Splynx API. Also check if access token expired and renew that if need.
+     * @param string $method
+     * @param string $url
+     * @param array $param
+     * @param string $contentType
+     * @return array|bool
+     */
+    private function request($method, $url, $param = [], $contentType = 'application/json')
+    {
+        if ($this->_version === self::API_VERSION_2) {
+            if (time() + 5 > $this->_access_token_expiration) {
+                $this->renewToken();
+            }
+        }
+
+        return $this->curlProcess($method, $url, $param, $contentType);
     }
 
     /**
@@ -173,29 +267,220 @@ class SplynxApi
      *
      * @return string of Splynx EA
      */
-    private function make_auth()
+    private function makeAuth()
     {
-        $auth = array(
-            'key' => $this->api_key,
-            'signature' => $this->signature(),
-            'nonce' => $this->nonce_v++
-        );
+        if ($this->_version === self::API_VERSION_2) {
+            $auth = [
+                'access_token' => $this->_access_token,
+            ];
+        } else {
+            $auth = [
+                'key' => $this->_api_key,
+                'signature' => $this->signature(),
+                'nonce' => $this->_nonce_v++
+            ];
 
-        // Add $sash is needed
-        if ($this->sash !== null) {
-            $auth['sash'] = $this->sash;
+            // Add $sash is needed
+            if ($this->_sash !== null) {
+                $auth['sash'] = $this->_sash;
+            }
         }
 
         return http_build_query($auth);
     }
 
+    /**
+     * Create API url by path and id
+     * @param string $path API endpoint
+     * @param null|int $id
+     * @return string
+     */
     private function getUrl($path, $id = null)
     {
-        $url = $this->url . '/' . $path;
+        $url = $this->_url . $this->_version . '/' . $path;
         if (!empty($id)) {
             $url .= '/' . $id;
         }
         return $url;
+    }
+
+    /**
+     * Grab info from response headers
+     * @param string $header_text
+     */
+    private function parseResponseHeaders($header_text)
+    {
+        foreach (explode("\r\n", $header_text) as $i => $line) {
+            if ($i !== 0 && !empty($line)) {
+                list ($key, $value) = array_pad(explode(': ', $line, 2), 2, null);
+                switch ($key) {
+                    case 'SpL-Administrator-Id':
+                        $this->administrator_id = $value;
+                        break;
+                    case 'SpL-Administrator-Role':
+                        $this->administrator_role = $value;
+
+                        break;
+                    case 'SpL-Administrator-Partner':
+                        $this->administrator_partner = $value;
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Validate API v2 auth data
+     * @param array $data
+     * @throws InvalidParam
+     */
+    private function validateAuthData($data)
+    {
+        $required = [];
+        switch ($data['auth_type']) {
+            case 'api_key':
+                $required[] = 'key';
+                $required[] = 'secret';
+                break;
+            case 'admin':
+            case 'customer':
+                $required[] = 'login';
+                $required[] = 'password';
+                break;
+            default:
+                throw new InvalidParam('Auth type is invalid!');
+        }
+        foreach ($required as $property) {
+            if (empty($data[$property])) {
+                throw new InvalidParam($property . ' is missing!');
+            }
+        }
+    }
+
+    /**
+     * Get $sash
+     * @return string
+     */
+    public function getSash()
+    {
+        return $this->_sash;
+    }
+
+    /**
+     * Set $sash
+     * @param string $_sash
+     */
+    public function setSash($_sash)
+    {
+        $this->_sash = $_sash;
+    }
+
+    /**
+     * Set API version
+     * @param string $v
+     */
+    public function setVersion($v)
+    {
+        $this->_version = $v;
+    }
+
+    /**
+     * Get current API version
+     * @return string
+     */
+    public function getVersion()
+    {
+        return $this->_version;
+    }
+
+    /**
+     * Get current user permissions
+     * @return array|null
+     */
+    public function getPermissions()
+    {
+        return $this->_permissions;
+    }
+
+    /**
+     * Set auth data (Only for API v2)
+     * @param array $data
+     */
+    public function setAuthData($data)
+    {
+        $this->_access_token = isset($data['access_token']) ? $data['access_token'] : null;
+        $this->_access_token_expiration = isset($data['access_token_expiration']) ? $data['access_token_expiration']: null;
+        $this->_refresh_token = isset($data['refresh_token']) ? $data['refresh_token'] : null;
+        $this->_refresh_token_expiration = isset($data['refresh_token_expiration']) ? $data['refresh_token_expiration'] : null;
+
+        if (isset($data['permissions'])) {
+            $this->_permissions = $data['permissions'];
+        }
+    }
+
+    /**
+     * Get auth data (Only for API v2)
+     * @return array
+     */
+    public function getAuthData()
+    {
+        return [
+            'access_token' => $this->_access_token,
+            'access_token_expiration' => $this->_access_token_expiration,
+            'refresh_token' => $this->_refresh_token,
+            'refresh_token_expiration' => $this->_refresh_token_expiration,
+            'permissions' => $this->_permissions,
+        ];
+    }
+
+    /**
+     * Make login. Generate JWT tokens and getting user permissions. (Only for API v2)
+     * @param array $data
+     * @return bool
+     */
+    public function login($data)
+    {
+        $this->validateAuthData($data);
+
+        $r = $this->curlProcess('POST', $this->getUrl(self::TOKEN_URL), json_encode($data), 'application/json');
+        if (!$r) {
+            return false;
+        }
+        $this->setAuthData($this->response);
+
+        return true;
+    }
+
+    /**
+     * Logout. (Only for API v2)
+     * @return array|bool
+     */
+    public function logout()
+    {
+        $r = $this->request('DELETE', $this->getUrl(self::TOKEN_URL, $this->_refresh_token), [], 'application/json');
+        $this->_access_token = null;
+        $this->_access_token_expiration = null;
+        $this->_refresh_token = null;
+        $this->_refresh_token_expiration = null;
+        $this->_permissions = null;
+
+        return $r;
+    }
+
+    /**
+     * Regenerate access token by refresh token.
+     * @return bool
+     */
+    public function renewToken()
+    {
+        $url = $this->getUrl(self::TOKEN_URL, $this->_refresh_token);
+        $r = $this->curlProcess('GET', $url, [], 'application/json');
+        if (!$r) {
+            return false;
+        }
+        $this->setAuthData($this->response);
+
+        return true;
     }
 
     /**
@@ -207,7 +492,7 @@ class SplynxApi
      */
     public function api_call_get($path, $id = null)
     {
-        return $this->curl_process('GET', $this->getUrl($path, $id), array(), 'application/json');
+        return $this->request('GET', $this->getUrl($path, $id), [], 'application/json');
     }
 
     /**
@@ -219,7 +504,7 @@ class SplynxApi
      */
     public function api_call_delete($path, $id)
     {
-        return $this->curl_process('DELETE', $this->getUrl($path, $id), array(), 'application/json');
+        return $this->request('DELETE', $this->getUrl($path, $id), [], 'application/json');
     }
 
     /**
@@ -228,6 +513,7 @@ class SplynxApi
      * @param $path
      * @param $params
      * @param bool $encode
+     * @param string $contentType
      * @return array
      */
     public function api_call_post($path, $params, $encode = true, $contentType = 'application/json')
@@ -235,7 +521,7 @@ class SplynxApi
         if ($encode) {
             $params = json_encode($params);
         }
-        return $this->curl_process('POST', $this->getUrl($path), $params, $contentType);
+        return $this->request('POST', $this->getUrl($path), $params, $contentType);
     }
 
     /**
@@ -257,6 +543,7 @@ class SplynxApi
      * @param $id
      * @param $params
      * @param bool $encode
+     * @param string $contentType
      * @return array
      */
     public function api_call_put($path, $id, $params, $encode = true, $contentType = 'application/json')
@@ -264,46 +551,18 @@ class SplynxApi
         if ($encode) {
             $params = json_encode($params);
         }
-        return $this->curl_process('PUT', $this->getUrl($path, $id), $params, $contentType);
+        return $this->request('PUT', $this->getUrl($path, $id), $params, $contentType);
     }
 
     /**
-     * Get $sash
+     * Send API call OPTIONS to Splynx API
      *
-     * @return string
+     * @param $path
+     * @param string $id
+     * @return array
      */
-    public function getSash()
+    public function api_call_options($path, $id = null)
     {
-        return $this->sash;
-    }
-
-    /**
-     * Set $sash
-     *
-     * @param string $sash
-     */
-    public function setSash($sash)
-    {
-        $this->sash = $sash;
-    }
-
-    private function parseResponseHeaders($header_text)
-    {
-        foreach (explode("\r\n", $header_text) as $i => $line)
-            if ($i !== 0 && !empty($line)) {
-                list ($key, $value) = array_pad(explode(': ', $line, 2), 2, null);
-                switch ($key) {
-                    case 'SpL-Administrator-Id':
-                        $this->administrator_id = $value;
-                        break;
-                    case 'SpL-Administrator-Role':
-                        $this->administrator_role = $value;
-
-                        break;
-                    case 'SpL-Administrator-Partner':
-                        $this->administrator_partner = $value;
-                        break;
-                }
-            }
+        return $this->request('OPTIONS', $this->getUrl($path, $id), [], 'application/json');
     }
 }
