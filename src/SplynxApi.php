@@ -133,30 +133,6 @@ class SplynxApi
     }
 
     /**
-     * Create signature for API call validation
-     * @return string hash
-     */
-    private function signature()
-    {
-        // Create string
-        $string = $this->_nonce_v . $this->_api_key;
-
-        // Create hash
-        $hash = hash_hmac('sha256', $string, $this->_api_secret);
-        $hash = strtoupper($hash);
-
-        return $hash;
-    }
-
-    /**
-     * Set nonce as timestamp
-     */
-    private function nonce()
-    {
-        $this->_nonce_v = round(microtime(true) * 100);
-    }
-
-    /**
      * Send curl request to Splynx API
      * @param string $method Method: GET, POST, PUT, DELETE, OPTIONS
      * @param string $url
@@ -278,8 +254,10 @@ class SplynxApi
     private function request($method, $url, $param = [], $contentType = 'application/json')
     {
         if ($this->_version === self::API_VERSION_2) {
-            if (time() + 5 > $this->_access_token_expiration) {
-                $this->renewToken();
+            if (time() + 5 < $this->_refresh_token_expiration) {
+                if (time() + 5 > $this->_access_token_expiration) {
+                    $this->renewToken();
+                }
             }
         }
 
@@ -385,6 +363,34 @@ class SplynxApi
     }
 
     /**
+     * Create signature for API call validation
+     * @param null|string $secret API secret
+     * @return string hash
+     */
+    private function signature($secret = null)
+    {
+        // Create string
+        $string = $this->_nonce_v . $this->_api_key;
+
+        $secret = empty($secret) ? $this->_api_secret : $secret;
+
+        // Create hash
+        $hash = hash_hmac('sha256', $string, $secret);
+        $hash = strtoupper($hash);
+
+        return $hash;
+    }
+
+    /**
+     * Set nonce as timestamp
+     */
+    private function nonce()
+    {
+        $this->_nonce_v = round(microtime(true) * 100);
+        return $this->_nonce_v;
+    }
+
+    /**
      * Get $sash
      * @return string
      */
@@ -470,6 +476,13 @@ class SplynxApi
     public function login($data)
     {
         $this->validateAuthData($data);
+
+        if ($data['auth_type'] === self::AUTH_TYPE_API_KEY) {
+            // Calculate signature from secret
+            $data['signature'] = $this->signature($data['secret']);
+            $data['nonce'] = $this->nonce();
+            unset($data['secret']);
+        }
 
         $r = $this->curlProcess('POST', $this->getUrl(self::TOKEN_URL), json_encode($data), 'application/json');
         if (!$r) {
