@@ -8,9 +8,9 @@ use exceptions\InvalidParam;
  * Author: Ruslan Malymon (Top Net Media s.r.o.)
  * https://splynx.com/wiki/index.php/API - documentation
  *
- * @example
- * ```
- * // API v2 usage example
+ * API v2 usage example
+ *
+ * ```php
  * $api = new SplynxApi('http://my_domain.com');
  * $api->setVersion(SplynxApi::API_VERSION_2);
  *
@@ -22,53 +22,71 @@ use exceptions\InvalidParam;
  *      // 'code' => '23422', // Uncomment it if two factor authorization is enabled
  * ]);
  *
- * // Login as customer
- * //$api->login([
- * //    'auth_type' => SplynxApi::AUTH_TYPE_CUSTOMER,
- * //    'login' => 'bob',
- * //    'password' => 'hard_password',
- * //]);
- *
- * // Login with using API key
- * //$api->login([
- * //    'auth_type' => SplynxApi::AUTH_TYPE_API_KEY,
- * //    'key' => '6871925f25d7e3341255d35ef2c40feb',
- * //    'secret' => '23012ba6d5698179b5d793074f0cfb2e',
- * //]);
- *
- * // Or you can store auth data in external storage
- * //$_SESSION['auth_data'] = $api->getAuthData();
- * //
- * And then use it for authenticate instead of login
- * //$api->setAuthData($_SESSION['auth_data']);
- *
- *
  * echo "\nUser permissions: " . var_export($api->getPermissions(), 1);
  *
  * $api->api_call_get('admin/administration/locations'); // Get all locations
  * echo "\nLocations: " . var_export($api->response, 1);
  * $api->logoff();
  * ```
+ *
+ * Login with using API key
+ *
+ * ```php
+ * $api->login([
+ *     'auth_type' => SplynxApi::AUTH_TYPE_API_KEY,
+ *     'key' => '6871925f25d7e3341255d35ef2c40feb',
+ *     'secret' => '23012ba6d5698179b5d793074f0cfb2e',
+ * ]);
+ * ```
+ *
+ * Save auth data to external storage
+ *
+ * ```php
+ * $_SESSION['auth_data'] = $api->getAuthData();
+ *
+ * // And then use it for authenticate instead of login
+ * $api->setAuthData($_SESSION['auth_data']);
+ * ```
  */
 class SplynxApi
 {
+    /** @var int Current admin ID. Worked only if sash is passed. */
     public $administrator_id;
+
+    /** @var int Current admin role. Worked only if sash is passed. */
     public $administrator_role;
+
+    /** @var int Current admin's partner id. Worked only if sash is passed. */
     public $administrator_partner;
 
+    /** @var bool Debug mode flag */
     public $debug = false;
 
+    /** @var bool Result of last request */
     public $result;
+
+    /** @var array|null Response of last request */
     public $response;
+
+    /** @var string Status code of last request */
     public $response_code;
 
     /** @var string Hash of admin session id. Will be send in $_GET['sash'] in add-ons requests */
     private $_sash;
 
+    /** @var null|string Api key used for making requests. Only for API v1 */
     private $_api_key;
+
+    /** @var null|string Api secret used for making requests. Only for API v1 */
     private $_api_secret;
+
+    /** @var int Nonce integer */
     private $_nonce_v;
+
+    /** @var string Base API url */
     private $_url;
+
+    /** @var string Current used API version */
     private $_version = self::API_VERSION_1;
 
     /** @var string Access token for API v2 authorization */
@@ -137,7 +155,6 @@ class SplynxApi
 
     /**
      * Send curl request to Splynx API
-     *
      * @param string $method Method: GET, POST, PUT, DELETE, OPTIONS
      * @param string $url
      * @param array $param
@@ -264,7 +281,6 @@ class SplynxApi
 
     /**
      * Make Splynx Extended Authorization string
-     *
      * @return string of Splynx EA
      */
     private function makeAuth()
@@ -404,6 +420,8 @@ class SplynxApi
 
     /**
      * Set auth data (Only for API v2)
+     *
+     * You can use it instead of login when you store auth data in external storage like as session.
      * @param array $data
      */
     public function setAuthData($data)
@@ -485,7 +503,6 @@ class SplynxApi
 
     /**
      * Send API call GET to Splynx API
-     *
      * @param $path
      * @param string $id
      * @return array
@@ -497,7 +514,6 @@ class SplynxApi
 
     /**
      * Send API call DELETE to Splynx API
-     *
      * @param string $path
      * @param integer $id
      * @return array JSON results
@@ -509,7 +525,6 @@ class SplynxApi
 
     /**
      * Send API call POST (add) to Splynx API
-     *
      * @param $path
      * @param $params
      * @param bool $encode
@@ -526,7 +541,6 @@ class SplynxApi
 
     /**
      * Upload file to Splynx
-     *
      * @param $path
      * @param $params
      * @return array
@@ -538,7 +552,6 @@ class SplynxApi
 
     /**
      * Send API call PUT (update) to Splynx API
-     *
      * @param $path
      * @param $id
      * @param $params
@@ -556,7 +569,6 @@ class SplynxApi
 
     /**
      * Send API call OPTIONS to Splynx API
-     *
      * @param $path
      * @param string $id
      * @return array
