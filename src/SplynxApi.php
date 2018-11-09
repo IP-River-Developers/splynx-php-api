@@ -165,6 +165,7 @@ class SplynxApi
 
         if ($method == 'HEAD') {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'HEAD');
+            curl_setopt($ch, CURLOPT_NOBODY, true);
         }
 
         if ($method == 'POST') {
@@ -223,12 +224,14 @@ class SplynxApi
                 }
                 break;
 
+            case 'HEAD':
             case 'DELETE':
                 if ($this->response_code == 204) {
                     $this->result = true;
                 }
                 break;
 
+            case 'OPTIONS':
             default:
                 if ($this->response_code == 200) {
                     $this->result = true;
