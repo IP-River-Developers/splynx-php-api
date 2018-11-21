@@ -1,6 +1,5 @@
 <?php
 
-use exceptions\InvalidParam;
 
 /**
  * Splynx API v. 2.0
@@ -116,6 +115,7 @@ class SplynxApi
     const AUTH_TYPE_ADMIN = 'admin';
     const AUTH_TYPE_CUSTOMER = 'customer';
     const AUTH_TYPE_API_KEY = 'api_key';
+    const AUTH_TYPE_SESSION = 'session';
 
     /**
      * Create Splynx API object
@@ -340,27 +340,30 @@ class SplynxApi
     /**
      * Validate API v2 auth data
      * @param array $data
-     * @throws InvalidParam
+     * @throws Exception
      */
     private function validateAuthData($data)
     {
         $required = [];
         switch ($data['auth_type']) {
-            case 'api_key':
+            case self::AUTH_TYPE_API_KEY:
                 $required[] = 'key';
                 $required[] = 'secret';
                 break;
-            case 'admin':
-            case 'customer':
+            case self::AUTH_TYPE_ADMIN:
+            case self::AUTH_TYPE_CUSTOMER:
                 $required[] = 'login';
                 $required[] = 'password';
                 break;
+            case self::AUTH_TYPE_SESSION:
+                $required[] = 'session_id';
+                break;
             default:
-                throw new InvalidParam('Auth type is invalid!');
+                throw new Exception('Auth type is invalid!');
         }
         foreach ($required as $property) {
             if (empty($data[$property])) {
-                throw new InvalidParam($property . ' is missing!');
+                throw new Exception($property . ' is missing!');
             }
         }
     }
