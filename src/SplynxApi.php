@@ -4,7 +4,7 @@
 /**
  * Splynx API v. 2.0
  * REST API Class
- * Author: Ruslan Malymon (Top Net Media s.r.o.)
+ * Author: Ruslan Malymon (Splynx s.r.o.)
  * https://splynx.com/wiki/index.php/API - documentation
  *
  * API v2 usage example
@@ -116,6 +116,9 @@ class SplynxApi
     const AUTH_TYPE_CUSTOMER = 'customer';
     const AUTH_TYPE_API_KEY = 'api_key';
     const AUTH_TYPE_SESSION = 'session';
+
+    /** Name of header which contains amount of records */
+    const HEADER_X_TOTAL_COUNT = 'X-total-count';
 
     /**
      * Create Splynx API object

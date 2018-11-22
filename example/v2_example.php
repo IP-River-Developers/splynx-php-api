@@ -1,8 +1,8 @@
 <?php
 /**
- * Splynx API v.1.0 demo script
- * Author: Ruslan Malymon (Top Net Media s.r.o.)
- * https://splynx.com/wiki/index.php/API - documentation
+ * Splynx API v2.0 demo script
+ * Author: Volodymyr Tsumanchuk (Splynx s.r.o.)
+ * https://splynxv2rc.docs.apiary.io - API documentation
  */
 
 include '../src/SplynxApi.php';
@@ -14,11 +14,49 @@ $secret = "API_SECRET"; // please set your secret
 
 // don't forget to add permissions to API Key, for changing locations.
 
-$api = new SplynxAPI($api_url, $key, $secret);
+$api = new SplynxAPI($api_url);
+$api->setVersion(SplynxApi::API_VERSION_2);
+
+$isAuthorized = $api->login([
+    'auth_type' => SplynxApi::AUTH_TYPE_API_KEY,
+    'key' => $key,
+    'secret' => $secret,
+]);
+
+if (!$isAuthorized) {
+    exit("Authorization failed!\n");
+}
+
+print "<pre>";
+
+print "Authorization info: " . var_export($api->getAuthData(), 1) . "\n";
 
 $locationsApiUrl = "admin/administration/locations";
 
-print "<pre>";
+print "Get count of locations\n";
+$result = $api->api_call_head($locationsApiUrl);
+print "Result: ";
+if ($result) {
+    print "Ok!\n";
+    $countOfLocations = isset($api->response_headers[SplynxApi::HEADER_X_TOTAL_COUNT]) ? $api->response_headers[SplynxApi::HEADER_X_TOTAL_COUNT] : 0;
+    print "Count of locations: " . print_r($countOfLocations, 1);
+} else {
+    print "Fail! Error code: $api->response_code\n";
+    print_r($api->response);
+}
+print "\n-------------------------------------------------\n";
+
+print "Get locations schema\n";
+$result = $api->api_call_options($locationsApiUrl);
+print "Result: ";
+if ($result) {
+    print "Ok!\n";
+    print_r($api->response);
+} else {
+    print "Fail! Error code: $api->response_code\n";
+    print_r($api->response);
+}
+print "\n-------------------------------------------------\n";
 
 print "List locations\n";
 $result = $api->api_call_get($locationsApiUrl);
@@ -33,10 +71,9 @@ if ($result) {
 print "\n-------------------------------------------------\n";
 
 print "Create location\n";
-$result = $api->api_call_post($locationsApiUrl,
-    array(
-        'name' => 'API test #' . rand()
-    ));
+$result = $api->api_call_post($locationsApiUrl, [
+    'name' => 'API test #' . rand()
+]);
 
 print "Result: ";
 if ($result) {
@@ -51,7 +88,6 @@ if ($result) {
 print "\n-------------------------------------------------\n";
 
 if ($locationId) {
-
     print "Retrieve location " . $locationId . "\n";
     $result = $api->api_call_get($locationsApiUrl, $locationId);
     print "Result: ";
@@ -66,7 +102,7 @@ if ($locationId) {
 
 
     print "Change created location name\n";
-    $result = $api->api_call_put($locationsApiUrl, $locationId, array('name' => 'NAME CHANGED #' . mt_rand()));
+    $result = $api->api_call_put($locationsApiUrl, $locationId, ['name' => 'NAME CHANGED #' . mt_rand()]);
     print "Result: ";
     if ($result) {
         print "Ok!\n";
@@ -100,5 +136,4 @@ if ($locationId) {
         print_r($api->response);
     }
     print "\n-------------------------------------------------\n";
-
 }
