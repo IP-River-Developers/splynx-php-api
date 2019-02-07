@@ -488,9 +488,9 @@ class SplynxApi
 
         if ($data['auth_type'] === self::AUTH_TYPE_API_KEY) {
             $this->_api_key = $data['key'];
+            $data['nonce'] = $this->nonce();
             // Calculate signature from secret
             $data['signature'] = $this->signature($data['secret']);
-            $data['nonce'] = $this->nonce();
             unset($data['secret']);
         }
 
