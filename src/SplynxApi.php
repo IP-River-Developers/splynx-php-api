@@ -129,7 +129,7 @@ class SplynxApi
      */
     public function __construct($url, $api_key = null, $api_secret = null)
     {
-        $this->_url = $url . 'api/';
+        $this->_url = $this->normalizeUrl($url) . 'api/';
         $this->_api_key = $api_key;
         $this->_api_secret = $api_secret;
         $this->nonce();
@@ -455,7 +455,7 @@ class SplynxApi
     public function setAuthData($data)
     {
         $this->_access_token = isset($data['access_token']) ? $data['access_token'] : null;
-        $this->_access_token_expiration = isset($data['access_token_expiration']) ? $data['access_token_expiration']: null;
+        $this->_access_token_expiration = isset($data['access_token_expiration']) ? $data['access_token_expiration'] : null;
         $this->_refresh_token = isset($data['refresh_token']) ? $data['refresh_token'] : null;
         $this->_refresh_token_expiration = isset($data['refresh_token_expiration']) ? $data['refresh_token_expiration'] : null;
 
@@ -622,5 +622,15 @@ class SplynxApi
     public function api_call_head($path)
     {
         return $this->request('HEAD', $this->getUrl($path), [], 'application/json');
+    }
+
+    /**
+     * Normalize url to https://some.url/
+     * @param string $url url with need normalize Example: 'https://some.url', 'https://some.url////'
+     * @return string normalized url Example: 'https://some.url/'
+     */
+    public function normalizeUrl($url)
+    {
+        return rtrim($url, '/') . '/';
     }
 }
