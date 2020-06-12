@@ -197,7 +197,7 @@ class SplynxApi
         $out = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new UserException('cURL failed. Error #' . curl_errno($ch) . ': ' . curl_error($ch));
+            throw new UserException('Error : ' . curl_error($ch));
         }
 
         // Parse headers and body
