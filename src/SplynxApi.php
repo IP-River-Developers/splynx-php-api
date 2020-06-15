@@ -1,8 +1,5 @@
 <?php
 
-use yii\base\UserException;
-
-
 /**
  * Splynx API v. 2.0
  * REST API Class
@@ -197,7 +194,7 @@ class SplynxApi
         $out = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new UserException('Error : ' . curl_error($ch));
+            throw new Exception('Error : ' . curl_error($ch));
         }
 
         // Parse headers and body
