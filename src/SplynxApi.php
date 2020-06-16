@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Splynx API v. 2.0
  * REST API Class
@@ -195,7 +194,7 @@ class SplynxApi
         $out = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            trigger_error('cURL failed. Error #' . curl_errno($ch) . ': ' . curl_error($ch), E_USER_ERROR);
+            throw new Exception('Error : ' . curl_error($ch));
         }
 
         // Parse headers and body
