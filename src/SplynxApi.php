@@ -63,13 +63,13 @@ class SplynxApi
     /** @var bool Result of last request */
     public $result;
 
-    /** @var array|null Response of last request */
+    /** @var array<mixed>|string|null Response of last request */
     public $response;
 
-    /** @var string Status code of last request */
+    /** @var int Status code of last request */
     public $response_code;
 
-    /** @var array Response headers */
+    /** @var array<string, string> Response headers */
     public $response_headers;
 
     /** @var string Hash of admin session id. Will be send in $_GET['sash'] in add-ons requests */
@@ -102,7 +102,7 @@ class SplynxApi
     /** @var int Refresh token expiration time */
     private $_refresh_token_expiration;
 
-    /** @var array|null Current API v2 user permissions */
+    /** @var array<string>|null Current API v2 user permissions */
     private $_permissions;
 
     const API_VERSION_1 = '1.0';
@@ -140,7 +140,7 @@ class SplynxApi
      * @param string $url
      * @param array $param
      * @param string $contentType
-     * @return array|bool
+     * @return bool
      */
     private function curlProcess($method, $url, $param = [], $contentType = 'application/json')
     {
@@ -256,7 +256,7 @@ class SplynxApi
      * @param string $url
      * @param array $param
      * @param string $contentType
-     * @return array|bool
+     * @return bool
      */
     private function request($method, $url, $param = [], $contentType = 'application/json')
     {
@@ -465,7 +465,7 @@ class SplynxApi
 
     /**
      * Get auth data (Only for API v2)
-     * @return array
+     * @return array{'access_token': string, 'access_token_expiration': int, 'refresh_token': string, 'refresh_token_expiration': int, 'permissions': array<string>|null}
      */
     public function getAuthData()
     {
@@ -506,7 +506,7 @@ class SplynxApi
 
     /**
      * Logout. (Only for API v2)
-     * @return array|bool
+     * @return bool
      */
     public function logout()
     {
@@ -539,8 +539,8 @@ class SplynxApi
     /**
      * Send API call GET to Splynx API
      * @param string $path API endpoint
-     * @param string|null $id Record id
-     * @return array
+     * @param string|int|null $id Record id
+     * @return bool
      */
     public function api_call_get($path, $id = null)
     {
@@ -551,7 +551,7 @@ class SplynxApi
      * Send API call DELETE to Splynx API
      * @param string $path API endpoint
      * @param integer $id Record id
-     * @return array JSON results
+     * @return bool
      */
     public function api_call_delete($path, $id)
     {
@@ -564,7 +564,7 @@ class SplynxApi
      * @param array $params Payload
      * @param bool $encode Encode payload?
      * @param string $contentType
-     * @return array
+     * @return bool
      */
     public function api_call_post($path, $params, $encode = true, $contentType = 'application/json')
     {
@@ -578,7 +578,7 @@ class SplynxApi
      * Upload file to Splynx
      * @param string $path API endpoint
      * @param array $params Payload
-     * @return array
+     * @return bool
      */
     public function api_call_post_file($path, $params)
     {
@@ -588,11 +588,11 @@ class SplynxApi
     /**
      * Send API call PUT (update) to Splynx API
      * @param string $path API endpoint
-     * @param int $id Record id
+     * @param int|null $id Record id
      * @param array $params Payload
      * @param bool $encode
      * @param string $contentType
-     * @return array
+     * @return bool
      */
     public function api_call_put($path, $id, $params, $encode = true, $contentType = 'application/json')
     {
@@ -606,7 +606,7 @@ class SplynxApi
      * Send API call OPTIONS to Splynx API
      * @param string $path API endpoint
      * @param int $id
-     * @return array
+     * @return bool
      */
     public function api_call_options($path, $id = null)
     {
@@ -616,7 +616,7 @@ class SplynxApi
     /**
      * Send API call HEAD to Splynx API
      * @param string $path API endpoint
-     * @return array
+     * @return bool
      */
     public function api_call_head($path)
     {
