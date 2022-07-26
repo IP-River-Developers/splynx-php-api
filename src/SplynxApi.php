@@ -194,7 +194,12 @@ class SplynxApi
         $out = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new Exception('Error : ' . curl_error($ch));
+            if (stripos(curl_error($ch), 'No route to host')) {
+                $errorMessage = 'Config has unknown API domain, please check your system API settings.';
+            } else {
+                $errorMessage = curl_error($ch);
+            }
+            throw new Exception('Error : ' . $errorMessage);
         }
 
         // Parse headers and body
