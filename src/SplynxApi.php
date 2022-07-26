@@ -300,7 +300,7 @@ class SplynxApi
     /**
      * Create API url by path and id
      * @param string $path API endpoint
-     * @param null|int $id
+     * @param null|int|string $id
      * @return string
      */
     private function getUrl($path, $id = null)
@@ -550,7 +550,7 @@ class SplynxApi
     /**
      * Send API call DELETE to Splynx API
      * @param string $path API endpoint
-     * @param integer $id Record id
+     * @param integer|string $id Record id
      * @return bool
      */
     public function api_call_delete($path, $id)
@@ -588,7 +588,7 @@ class SplynxApi
     /**
      * Send API call PUT (update) to Splynx API
      * @param string $path API endpoint
-     * @param int|null $id Record id
+     * @param int|string|null $id Record id
      * @param array $params Payload
      * @param bool $encode
      * @param string $contentType
