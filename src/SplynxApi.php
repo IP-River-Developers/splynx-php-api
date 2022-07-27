@@ -550,7 +550,7 @@ class SplynxApi
     /**
      * Send API call DELETE to Splynx API
      * @param string $path API endpoint
-     * @param integer|string $id Record id
+     * @param integer|string|null $id Record id
      * @return bool
      */
     public function api_call_delete($path, $id)
