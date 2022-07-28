@@ -1,5 +1,5 @@
-<?php
-
+<?php // phpcs:disable PSR1.Methods.CamelCapsMethodName
+// phpcs:disable PSR1.Classes.ClassDeclaration
 /**
  * Splynx API v. 2.0
  * REST API Class
@@ -46,7 +46,13 @@
  * $api->setAuthData($_SESSION['auth_data']);
  * ```
  *
- * @phpstan-type AuthDataType array{'access_token': string|null, 'access_token_expiration': int|null, 'refresh_token': string|null, 'refresh_token_expiration': int|null, 'permissions': array<string>|null}
+ * @phpstan-type AuthDataType array{
+ * 'access_token': string|null,
+ * 'access_token_expiration': int|null,
+ * 'refresh_token': string|null,
+ * 'refresh_token_expiration': int|null,
+ * 'permissions': array<string>|null
+ * }
  */
 class SplynxApi
 {
@@ -107,19 +113,19 @@ class SplynxApi
     /** @var array<string>|null Current API v2 user permissions */
     private $_permissions;
 
-    const API_VERSION_1 = '1.0';
-    const API_VERSION_2 = '2.0';
+    public const API_VERSION_1 = '1.0';
+    public const API_VERSION_2 = '2.0';
 
     /** Url for working with auth tokens */
-    const TOKEN_URL = 'admin/auth/tokens';
+    public const TOKEN_URL = 'admin/auth/tokens';
 
-    const AUTH_TYPE_ADMIN = 'admin';
-    const AUTH_TYPE_CUSTOMER = 'customer';
-    const AUTH_TYPE_API_KEY = 'api_key';
-    const AUTH_TYPE_SESSION = 'session';
+    public const AUTH_TYPE_ADMIN = 'admin';
+    public const AUTH_TYPE_CUSTOMER = 'customer';
+    public const AUTH_TYPE_API_KEY = 'api_key';
+    public const AUTH_TYPE_SESSION = 'session';
 
     /** Name of header which contains amount of records */
-    const HEADER_X_TOTAL_COUNT = 'X-total-count';
+    public const HEADER_X_TOTAL_COUNT = 'X-total-count';
 
     /**
      * Create Splynx API object
