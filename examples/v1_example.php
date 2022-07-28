@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignoreFile
 /**
  * Splynx API v1.0 demo script
  * Author: Ruslan Malymon (Splynx s.r.o.)
