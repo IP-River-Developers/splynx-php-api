@@ -11,7 +11,7 @@ $api_url = 'http://splynx/'; // please set your Splynx URL
 
 $session_id= "SESSION_ID"; // Splynx session id
 
-$api = new SplynxAPI($api_url);
+$api = new SplynxApi($api_url);
 $api->setVersion(SplynxApi::API_VERSION_2);
 
 $isAuthorized = $api->login([
@@ -23,7 +23,7 @@ if (!$isAuthorized) {
     exit("Authorization failed!\n");
 }
 
-print "Authorization info: " . var_export($api->getAuthData(), 1) . "\n";
+print "Authorization info: " . var_export($api->getAuthData(), true) . "\n";
 
 $customersApiUrl = "admin/customers/customer";
 

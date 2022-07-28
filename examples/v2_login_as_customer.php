@@ -13,7 +13,7 @@ $customer_id = "CUSTOMER_ID"; // Splynx customer login
 $customer_login = "CUSTOMER_LOGIN"; // Splynx customer login
 $customer_password = "CUSTOMER_PASSWORD"; // Splynx customer password
 
-$api = new SplynxAPI($api_url);
+$api = new SplynxApi($api_url);
 $api->setVersion(SplynxApi::API_VERSION_2);
 
 $isAuthorized = $api->login([
@@ -26,7 +26,7 @@ if (!$isAuthorized) {
     exit("Authorization failed!\n");
 }
 
-print "Authorization info: " . var_export($api->getAuthData(), 1) . "\n";
+print "Authorization info: " . var_export($api->getAuthData(), true) . "\n";
 
 $customersApiUrl = "admin/customers/customer";
 

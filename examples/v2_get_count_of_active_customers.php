@@ -12,7 +12,7 @@ $api_url = 'http://splynx/'; // please set your Splynx URL
 $admin_login = "ADMIN_LOGIN"; // Splynx administrator login
 $admin_password = "ADMIN_PASSWORD"; // Splynx administrator password
 
-$api = new SplynxAPI($api_url);
+$api = new SplynxApi($api_url);
 $api->setVersion(SplynxApi::API_VERSION_2);
 
 $isAuthorized = $api->login([
@@ -39,7 +39,7 @@ print "Result: ";
 if ($result) {
     print "Ok!\n";
     $count = isset($api->response_headers[SplynxApi::HEADER_X_TOTAL_COUNT]) ? $api->response_headers[SplynxApi::HEADER_X_TOTAL_COUNT] : 0;
-    print "Count: " . var_export($count, 1) . "\n";
+    print "Count: " . var_export($count, true) . "\n";
 } else {
     print "Fail! Error code: $api->response_code\n";
     print_r($api->response);

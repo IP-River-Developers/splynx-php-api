@@ -14,7 +14,7 @@ $secret = "API_SECRET"; // please set your secret
 
 // don't forget to add permissions to API Key, for changing locations.
 
-$api = new SplynxAPI($api_url, $key, $secret);
+$api = new SplynxApi($api_url, $key, $secret);
 
 $locationsApiUrl = "admin/administration/locations";
 
@@ -41,7 +41,7 @@ print "Result: ";
 if ($result) {
     print "Ok!\n";
     print_r($api->response);
-    $locationId = $api->response['id'];
+    $locationId = $api->response['id'];//@phpstan-ignore-line
 } else {
     print "Fail! Error code: $api->response_code\n";
     print_r($api->response);
