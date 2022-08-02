@@ -5,3 +5,6 @@ parameters:
         maximumNumberOfProcesses: 2
     paths:
         - %currentWorkingDirectory%
+    excludePaths:
+        analyseAndScan:
+            - %currentWorkingDirectory%/vendor
