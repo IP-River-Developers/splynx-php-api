@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    parallel:
+        processTimeout: 300.0
+        maximumNumberOfProcesses: 2
+    paths:
+        - %currentWorkingDirectory%
+    excludePaths:
+        analyseAndScan:
+            - %currentWorkingDirectory%/vendor

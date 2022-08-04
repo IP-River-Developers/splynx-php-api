@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignoreFile
 /**
  * Splynx API v2.0 demo script
  * Author: Volodymyr Tsumanchuk (Splynx s.r.o.)
@@ -14,7 +14,7 @@ $secret = "API_SECRET"; // please set your secret
 
 // don't forget to add permissions to API Key, for changing locations.
 
-$api = new SplynxAPI($api_url);
+$api = new SplynxApi($api_url);
 $api->setVersion(SplynxApi::API_VERSION_2);
 
 $isAuthorized = $api->login([
@@ -29,7 +29,7 @@ if (!$isAuthorized) {
 
 print "<pre>";
 
-print "Authorization info: " . var_export($api->getAuthData(), 1) . "\n";
+print "Authorization info: " . var_export($api->getAuthData(), true) . "\n";
 
 $locationsApiUrl = "admin/administration/locations";
 
@@ -39,7 +39,7 @@ print "Result: ";
 if ($result) {
     print "Ok!\n";
     $countOfLocations = isset($api->response_headers[SplynxApi::HEADER_X_TOTAL_COUNT]) ? $api->response_headers[SplynxApi::HEADER_X_TOTAL_COUNT] : 0;
-    print "Count of locations: " . print_r($countOfLocations, 1);
+    print "Count of locations: " . print_r($countOfLocations, true);
 } else {
     print "Fail! Error code: $api->response_code\n";
     print_r($api->response);
@@ -79,7 +79,7 @@ print "Result: ";
 if ($result) {
     print "Ok!\n";
     print_r($api->response);
-    $locationId = $api->response['id'];
+    $locationId = $api->response['id'];//@phpstan-ignore-line
 } else {
     print "Fail! Error code: $api->response_code\n";
     print_r($api->response);

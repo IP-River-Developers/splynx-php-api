@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignoreFile
 /**
  * Splynx API v2.0 demo script
  * Author: Volodymyr Tsumanchuk (Splynx s.r.o.)
@@ -12,7 +12,7 @@ $api_url = 'http://splynx/'; // please set your Splynx URL
 $admin_login = "ADMIN_LOGIN"; // Splynx administrator login
 $admin_password = "ADMIN_PASSWORD"; // Splynx administrator password
 
-$api = new SplynxAPI($api_url);
+$api = new SplynxApi($api_url);
 $api->setVersion(SplynxApi::API_VERSION_2);
 
 $isAuthorized = $api->login([
@@ -27,7 +27,7 @@ if (!$isAuthorized) {
 
 print "<pre>";
 
-print "Authorization info: " . var_export($api->getAuthData(), 1) . "\n";
+print "Authorization info: " . var_export($api->getAuthData(), true) . "\n";
 
 $locationsApiUrl = "admin/administration/locations";
 
