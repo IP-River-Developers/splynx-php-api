@@ -202,8 +202,13 @@ class SplynxApi
         /** @var string|false $out */
         $out = curl_exec($ch);
 
-        if (curl_errno($ch) || $out === false) {
-            throw new Exception('Error : ' . curl_error($ch));
+        if (curl_errno($ch)) {
+            $message = curl_error($ch);
+            if (stripos($message, 'No route to host')) {
+                throw new SplynxApiCustomExceptions();
+            } else {
+                throw new Exception('Error : ' . $message);
+            }
         }
 
         // Parse headers and body
