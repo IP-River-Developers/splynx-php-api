@@ -205,10 +205,10 @@ class SplynxApi
         if (curl_errno($ch)) {
             $message = curl_error($ch);
             if (stripos($message, 'No route to host')) {
-                throw new SplynxApiCustomExceptions();
-            } else {
-                throw new Exception('Error : ' . $message);
+                throw new SplynxApiInvalidConfigsException('Warning: Config has unknown API domain, please check your system API settings.');
             }
+
+            throw new Exception('Error : ' . $message);
         }
 
         // Parse headers and body
