@@ -202,7 +202,7 @@ class SplynxApi
         /** @var string|false $out */
         $out = curl_exec($ch);
 
-        if (curl_errno($ch)) {
+        if (!$out || curl_errno($ch)) {
             $message = curl_error($ch);
             if (stripos(strtolower($message), 'no route to host')) {
                 throw new SplynxApiInvalidConfigsException('Warning: Config has unknown API domain, please check your system API settings.');
@@ -360,7 +360,7 @@ class SplynxApi
 
     /**
      * Validate API v2 auth data
-     * @param array<string, string> $data
+     * @param array<string, string|int> $data
      * @return void
      * @throws Exception
      */
@@ -507,7 +507,7 @@ class SplynxApi
 
     /**
      * Make login. Generate JWT tokens and getting user permissions. (Only for API v2)
-     * @param array<string, string> $data
+     * @param array<string, string|int> $data
      * @return bool
      */
     public function login($data)
@@ -515,10 +515,10 @@ class SplynxApi
         $this->validateAuthData($data);
 
         if ($data['auth_type'] === self::AUTH_TYPE_API_KEY) {
-            $this->_api_key = $data['key'];
-            // Calculate signature from secret
-            $data['signature'] = $this->signature($data['secret']);
+            $this->_api_key = (string)$data['key'];
             $data['nonce'] = $this->nonce();
+            // Calculate signature from secret
+            $data['signature'] = $this->signature((string)$data['secret']);
             unset($data['secret']);
         }
 
