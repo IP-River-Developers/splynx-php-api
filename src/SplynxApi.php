@@ -259,7 +259,7 @@ class SplynxApi
         if (!empty($out)) {
             $this->response = json_decode($out, true);
         }
-        if ($this->response == false) {
+        if ($this->response === false) {
             $this->response = $out;
         }
 
