@@ -7,8 +7,6 @@ parameters:
         maximumNumberOfProcesses: 2
     paths:
         - %currentWorkingDirectory%
-    ignoreErrors:
-        - '#^PHPDoc tag @throws with type .* is not subtype of Throwable$#'
     excludePaths:
         analyseAndScan:
             - %currentWorkingDirectory%/vendor
