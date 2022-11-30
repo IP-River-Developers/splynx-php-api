@@ -71,7 +71,7 @@ class SplynxApi
     /** @var bool Result of last request */
     public $result;
 
-    /** @var array<mixed>|string Response of last request */
+    /** @var array<mixed>|string|false Response of last request */
     public $response;
 
     /** @var int Status code of last request */
