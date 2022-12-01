@@ -256,8 +256,9 @@ class SplynxApi
                 }
                 break;
         }
-        if (!empty($out)) { // SPLAPI-157 method delete return empty string, decode of empty string return Syntax error.
-            // And this error can appear in next code, where will be call json_last_error()
+        if (!empty($out)) {
+            // SPLAPI-157 method delete return empty string, decode of empty string return Syntax error.
+            // This error can appear in next code, where will be call json_last_error()
             $this->response = json_decode($out, true);
         }
         if ($this->response === false) {
