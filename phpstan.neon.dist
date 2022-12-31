@@ -1,3 +1,5 @@
+includes:
+    - %rootDir%/../../../phpstan/base_config.neon
 parameters:
     level: 8
     parallel:

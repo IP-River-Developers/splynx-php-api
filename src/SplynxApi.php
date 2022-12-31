@@ -71,7 +71,7 @@ class SplynxApi
     /** @var bool Result of last request */
     public $result;
 
-    /** @var array<mixed>|string Response of last request */
+    /** @var array<mixed>|string|false|null Response of last request */
     public $response;
 
     /** @var int Status code of last request */
@@ -256,7 +256,11 @@ class SplynxApi
                 }
                 break;
         }
-        $this->response = json_decode($out, true);
+        if (!empty($out)) {
+            // SPLAPI-157 method delete return empty string, decode of empty string return Syntax error.
+            // This error can appear in next code, where will be call json_last_error()
+            $this->response = json_decode($out, true);
+        }
         if ($this->response === false) {
             $this->response = $out;
         }
