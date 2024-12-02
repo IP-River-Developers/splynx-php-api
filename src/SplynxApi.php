@@ -148,9 +148,10 @@ class SplynxApi
      * @param string $url
      * @param array<string, mixed>|string $param
      * @param string $contentType
+     * @param integer $timeout
      * @return bool
      */
-    private function curlProcess($method, $url, $param = [], $contentType = 'application/json')
+    private function curlProcess($method, $url, $param = [], $contentType = 'application/json', $timeout = 5)
     {
         $ch = curl_init();
 
@@ -187,8 +188,8 @@ class SplynxApi
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
         }
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 2);
         curl_setopt($ch, CURLOPT_UNRESTRICTED_AUTH, true);
