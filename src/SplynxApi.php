@@ -279,7 +279,7 @@ class SplynxApi
      * @param string $contentType
      * @return bool
      */
-    private function request($method, $url, $param = [], $contentType = 'application/json')
+    private function request($method, $url, $param = [], $contentType = 'application/json', $timeout = 5)
     {
         if ($this->_version === self::API_VERSION_2) {
             if (time() + 5 < $this->_refresh_token_expiration) {
@@ -289,7 +289,7 @@ class SplynxApi
             }
         }
 
-        return $this->curlProcess($method, $url, $param, $contentType);
+        return $this->curlProcess($method, $url, $param, $contentType, $timeout);
     }
 
     /**
@@ -580,9 +580,9 @@ class SplynxApi
      * @param string|int|null $id Record id
      * @return bool
      */
-    public function api_call_get($path, $id = null)
+    public function api_call_get($path, $id = null, $timeout = 5)
     {
-        return $this->request('GET', $this->getUrl($path, $id), [], 'application/json');
+        return $this->request('GET', $this->getUrl($path, $id), [], 'application/json', $timeout);
     }
 
     /**
